@@ -2,3 +2,26 @@ body{
     background-color: black;
     color: white;
 }
+h1{
+    text-align: center;
+}
+
+label{
+    font-size: 30px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.conversor{
+    margin-top: 20px;
+    background-color:gray;
+    height: 400px;
+    width: 800px;
+    padding:50px;
+}
+
+#btnBuscar{
+    height: 50px;
+    color: white;
+    font-size: 20px;
+}
