@@ -1,6 +1,7 @@
 
 const btnBuscar = document.getElementById("btnBuscar");
 let inputMonedas = document.getElementById("monedas");
+let inputPesos = document.getElementById("monedas");
 const urlApi = 'https://mindicador.cl/api/';
 
 const getDatosFile = async() => {
@@ -14,15 +15,14 @@ const getDatosFile = async() => {
 }
 
 
-const getDatos = async() => {
+const getDatos = async(metodo = "") => {
     try{
-        const res = await fetch(urlApi);
+        const res = await fetch(urlApi+metodo);
         const data = await res.json();
-        console.log(data);
         return data;
     }
     catch(error){
-        alert('No es posible obtener datos de la API');
+        alert('No es posible obtener datos de la API' + error);
         getDatosFile();
     }
 }
@@ -31,23 +31,58 @@ async function obtenerMonedas(){
     try {
         const data = await getDatos();
         let template = '';
-        console.log(data.version);
-        template += `<option selected>Seleccione moneda</option>`;
+        template += `<option value="0" selected>Seleccione moneda</option>`;
         Object.keys(data).forEach( key => {
             if(data[key].codigo){
                 template += `<option value="${data[key].codigo}">${data[key].nombre}</option>`;
         }
         });
-        console.log(template);
         inputMonedas.innerHTML=template;
     } catch (error) {
         console.log("Error"+error.message);
     }
-
 }
 
-btnBuscar.addEventListener("click", function(){
-    getDatos();
+async function getAndCreateDataToChart(monedaSeleccionada) {
+    const res = await getDatos(monedaSeleccionada);
+    const labels = res.serie.slice(0,10).map((item) => {
+        console.log((item.fecha).toString("yyyy"))
+        return (item.fecha.split("T")[0]);
+    });
+
+    const data = res.serie.slice(0,10).map((item) => {
+        return Number(item.valor);
+    });
+    
+    const datasets = [
+    {
+        label: res.nombre,
+        borderColor: "rgb(255, 99, 132)",
+        data
+    }];
+        return { labels, datasets };
+}
+
+async function renderGrafica(monedaSeleccionada) {
+    const data = await getAndCreateDataToChart(monedaSeleccionada);
+    const config = {
+        type: "line",
+        data
+    };
+
+    const myChart = document.getElementById("myChart");
+    myChart.style.backgroundColor = "white";
+    new Chart(myChart, config);
+}
+
+btnBuscar.addEventListener("click", async function(){
+    let monedaSeleccionada = inputMonedas.value;
+    if(monedaSeleccionada!="0"){
+        await renderGrafica(monedaSeleccionada);
+    }
+    else{
+        alert("Seleccione moneda");
+    }
 })
 
 
