@@ -1,7 +1,10 @@
 
 const btnBuscar = document.getElementById("btnBuscar");
 let inputMonedas = document.getElementById("monedas");
-let inputPesos = document.getElementById("monedas");
+let inputPesos = document.getElementById("pesos").value;
+let resultado = document.getElementById("resultado");
+let myChart = "";
+let grafico= "";
 const urlApi = 'https://mindicador.cl/api/';
 
 const getDatosFile = async() => {
@@ -14,7 +17,6 @@ const getDatosFile = async() => {
     }
 }
 
-
 const getDatos = async(metodo = "") => {
     try{
         const res = await fetch(urlApi+metodo);
@@ -25,6 +27,14 @@ const getDatos = async(metodo = "") => {
         alert('No es posible obtener datos de la API' + error);
         getDatosFile();
     }
+}
+
+const formatearFecha = (fecha) => {
+    const nuevaFecha = new Date(fecha);
+    let dia = nuevaFecha.getDate();
+    let mes = nuevaFecha.getMonth()+1;
+    let anio = nuevaFecha.getFullYear();
+    return `${dia<10? "0"+dia: dia}/${ mes<10? "0"+mes: mes}/${anio}`;
 }
 
 async function obtenerMonedas(){
@@ -43,48 +53,65 @@ async function obtenerMonedas(){
     }
 }
 
-async function getAndCreateDataToChart(monedaSeleccionada) {
-    const res = await getDatos(monedaSeleccionada);
-    const labels = res.serie.slice(0,10).map((item) => {
-        console.log((item.fecha).toString("yyyy"))
-        return (item.fecha.split("T")[0]);
+async function getAndCreateDataToChart(monedaSeleccionada,pesos) {
+    let res = await getDatos(monedaSeleccionada);
+    let nombreGrafico = res.nombre;
+    res = res.serie.slice(0,10);
+    const labels = res.map((item) => {
+        return formatearFecha(item.fecha);
     });
 
-    const data = res.serie.slice(0,10).map((item) => {
+    const data = res.map((item) => {
         return Number(item.valor);
     });
-    
+
     const datasets = [
     {
-        label: res.nombre,
+        label: nombreGrafico,
         borderColor: "rgb(255, 99, 132)",
         data
     }];
-        return { labels, datasets };
+
+    resultado.innerHTML = "Resultado: " + (pesos * res[0].valor).toLocaleString();
+    return { labels, datasets };
 }
 
-async function renderGrafica(monedaSeleccionada) {
-    const data = await getAndCreateDataToChart(monedaSeleccionada);
+async function renderGrafica(monedaSeleccionada,pesos) {
+    const data = await getAndCreateDataToChart(monedaSeleccionada,pesos);
     const config = {
         type: "line",
         data
     };
-
-    const myChart = document.getElementById("myChart");
+    if (grafico) grafico.destroy();
+    myChart = document.getElementById("myChart");
     myChart.style.backgroundColor = "white";
-    new Chart(myChart, config);
+    grafico = new Chart(myChart, config);
 }
+
+$("#pesos").keyup(function () {
+ 
+    var valor = $(this).prop("value");
+
+    //evaluamos si es negativo, y ponemos 1 por defecto
+    if (valor < 0)
+        $(this).prop("value", "1");
+})
 
 btnBuscar.addEventListener("click", async function(){
     let monedaSeleccionada = inputMonedas.value;
+    inputPesos = document.getElementById("pesos").value;
+    if(inputPesos==""){
+        alert("Ingrese cantidad en pesos");
+        return
+    }
     if(monedaSeleccionada!="0"){
-        await renderGrafica(monedaSeleccionada);
+        await renderGrafica(monedaSeleccionada,inputPesos);
     }
     else{
         alert("Seleccione moneda");
     }
 })
 
-
-
-obtenerMonedas();
+window.addEventListener("load", function(){
+    obtenerMonedas();
+})

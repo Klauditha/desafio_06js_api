@@ -17,7 +17,7 @@
                 <label class="form-label" for="pesos">Pesos CLP</label>
             </div>
             <div class="row">
-                <input class="form-control col-md-4" type="number" name="pesos" id="" />
+                <input class="form-control col-md-4" type="number" name="pesos" id="pesos" min="1" pattern="^[0-9]+" />
             </div>
             <div class="row mt-4">
                 <label class="form-label" for="monedas">Moneda a convertir:</label>
@@ -26,13 +26,18 @@
                 <select class="form-select col-md-4"  name="monedas" id="monedas"></select>
             </div>
             <div class="row mt-4">
-                <button class="btn btn-info" id="btnBuscar">Buscar</button>
+                <button class="btn btn-info" type="button" id="btnBuscar">Buscar</button>
             </div>
             <div class="row mt-4">
-                <p id="resultado" class="form-label">Resultado</p>
+                <label id="resultado" class="form-label">Resultado:</label>
+
+            </div>
+            <div class="grafico">
+                <canvas id="myChart"></canvas>
             </div>
         </form>
        </div>
 </body>
 <script src="./assets/js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </html>
